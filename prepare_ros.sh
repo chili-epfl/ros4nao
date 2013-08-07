@@ -30,8 +30,8 @@ echo "First, I'll merge all the sysdeps in your prefix ($PREFIX)..."
 
 for f in $PACKAGES
 do
-        echo "Installing ${f##*/} in your prefix..."
-        tar -xf $f
+        echo "Installing ${f} in your prefix..."
+        tar -xjf $f
 done
 
 
