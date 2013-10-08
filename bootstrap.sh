@@ -27,19 +27,6 @@ EOF
 
 source ~/.bash_profile
 
-## if on Nao, give ourselves all sudo rights
-if [ "`uname -p`" = "Intel(R) Atom(TM) CPU Z530 @ 1.60GHz" ]
-then
-	echo "It seems you are running this script on the robot."
-	echo "For convenience, we need to grant all sudo rights"
-	echo "to the 'nao' user. Please enter the root password "
-	echo "(defaults to 'root')."
-	su -c"echo 'nao     ALL=(ALL) ALL' >> /etc/sudoers"
-fi
-
-echo "Please enter now the 'nao' password."
-sudo >/dev/null
-
 # On Nao, the SD card is mounted on /var/persistent
 # install our stuff there.
 if [ -d /var/persistent ]
