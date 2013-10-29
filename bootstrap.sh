@@ -1,3 +1,7 @@
+OPENNAO_PORTAGE_BIN_MIRROR=http://chili-research.epfl.ch/OpenNao/1.14
+OPENNAO_SYSTEM_PACKAGES=opennao-1.14.5-pkg_db.tar.gz
+ROBOTPKG_OPENNAO_BIN_MIRROR=http://robotpkg.openrobots.org/packages/bsd/OpenNao-1.14.5.1-i386
+
 if [ "`lsb_release -i`" != "Distributor ID:	OpenNao" ]
 then
 	echo "This script must be run on Nao or an OpenNao VM"
@@ -6,9 +10,7 @@ fi
 
 if [ -z "$OPENROBOTS" ]
 then
-    echo "It seems your environment is already set-up. Using it."
-else
-    echo "Preparing your environment in ~/.bash_profile..."
+   echo "Preparing your environment in ~/.bash_profile..."
     
 cat >> ~/.bash_profile <<"EOF"
 export OPENROBOTS=/opt/openrobots
@@ -31,6 +33,8 @@ alias emergelocal='emerge -G --root=/opt/local'
 alias sudo='sudo env PATH=$PATH '
 EOF
 
+else
+    echo "It seems your environment is already set-up. Using it."
 fi
 
 source ~/.bash_profile
@@ -39,6 +43,7 @@ source ~/.bash_profile
 # install our stuff there.
 if [ -d /var/persistent ]
 then
+	echo "Creating a symlink from SD card to /opt..."
 	sudo mkdir -p /var/persistent/opt
 	sudo ln -Ts /var/persistent/opt /opt
 fi
@@ -50,7 +55,7 @@ then
 else
 	echo "'emerge' not available. Installing 'emerge'..."
 
-	wget -q http://chili-research.epfl.ch/OpenNao/1.14/packages/sys-apps/portage-2.1.10.41-r178.tbz2
+	wget -q $OPENNAO_PORTAGE_BIN_MIRROR/packages/sys-apps/portage-2.1.10.41-r178.tbz2
 	sudo tar -xjf /home/nao/portage-2.1.10.41-r178.tbz2 -C /
 
 	# fake a valid portage environment
@@ -64,20 +69,22 @@ else
 
 	# filling up the /var/db/pkg database with all packages already available
 	# on Nao (ie, the one available on the OpenNao VM)
-	wget -q http://chili-research.epfl.ch/OpenNao/1.14/opennao-1.14.5-pkg_db.tar.gz
-	sudo tar -xzf /home/nao/opennao-1.14.5-pkg_db.tar.gz -C /
+	wget -q $OPENNAO_PORTAGE_BIN_MIRROR/$OPENNAO_SYSTEM_PACKAGES
+	sudo tar -xzf $OPENNAO_SYSTEM_PACKAGES -C /
+	rm $OPENNAO_SYSTEM_PACKAGES
 fi
 
 # configure remote server for binary packages
-echo "Setting the URL of the remote server for binary packages..."
-echo 'PORTAGE_BINHOST=http://chili-research.epfl.ch/OpenNao/1.14/packages' | sudo tee -a /etc/portage/make.conf
+echo "Setting the URL of the remote server for binary packages in /etc/portage/make.conf:"
+echo "PORTAGE_BINHOST=$OPENNAO_PORTAGE_BIN_MIRROR/packages" | sudo tee -a /etc/portage/make.conf
 
 
 # Install robotpkg + package manager
 echo "Installing robotpkg..."
-wget -q http://robotpkg.openrobots.org/packages/bsd/OpenNao-1.14.5.1-i386/bootstrap.tar.gz
+wget -q $ROBOTPKG_OPENNAO_BIN_MIRROR/bootstrap.tar.gz
 sudo tar -xf bootstrap.tar.gz -C /
-sudo robotpkg_add http://robotpkg.openrobots.org/packages/bsd/OpenNao-1.14.5.1-i386/All/pkgin-0.6.4.tgz
+rm bootstrap.tar.gz
+sudo robotpkg_add $ROBOTPKG_OPENNAO_BIN_MIRROR/All/pkgin-0.6.4.tgz
 sudo robotpkgin update
 
 echo "Your system is now configured to use binary packages for both "
