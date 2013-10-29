@@ -3,8 +3,14 @@ then
 	echo "This script must be run on Nao or an OpenNao VM"
 	exit 1
 fi
-	
-cat > ~/.bash_profile <<"EOF"
+
+if [ -z "$OPENROBOTS" ]
+then
+    echo "It seems your environment is already set-up. Using it."
+else
+    echo "Preparing your environment in ~/.bash_profile..."
+    
+cat >> ~/.bash_profile <<"EOF"
 export OPENROBOTS=/opt/openrobots
 export PATH=$PATH:$OPENROBOTS/sbin:$OPENROBOTS/bin
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENROBOTS/lib
@@ -17,13 +23,15 @@ export MANPATH=$MANPATH:$OPENROBOTS/man
 alias emerge='emerge -G --autounmask-write'
 
 # use this alias to install sysdeps to /opt/local
-# convenient re-distribute the whole system
+# convenient to re-distribute the whole system
 alias emergelocal='emerge -G --root=/opt/local'
 
 # make sure PATH and aliases are preserved 
 # through sudo (cf http://serverfault.com/a/178956)
 alias sudo='sudo env PATH=$PATH '
 EOF
+
+fi
 
 source ~/.bash_profile
 
