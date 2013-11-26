@@ -84,7 +84,7 @@ echo "Installing robotpkg..."
 wget -q $ROBOTPKG_OPENNAO_BIN_MIRROR/bootstrap.tar.gz
 sudo tar -xf bootstrap.tar.gz -C /
 rm bootstrap.tar.gz
-sudo robotpkg_add $ROBOTPKG_OPENNAO_BIN_MIRROR/All/pkgin-0.6.4.tgz
+sudo robotpkg_add $ROBOTPKG_OPENNAO_BIN_MIRROR/All/pkgin-0.6.4r1.tgz
 sudo robotpkgin update
 
 echo "Your system is now configured to use binary packages for both "
