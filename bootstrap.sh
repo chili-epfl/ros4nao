@@ -22,8 +22,6 @@ export MANPATH=$MANPATH:$OPENROBOTS/man
 # if ROS is installed, source setup.bash
 [ -f "$OPENROBOTS/etc/ros/setup.bash" ] && source $OPENROBOTS/etc/ros/setup.bash
 
-alias emerge='emerge -G --autounmask-write'
-
 # use this alias to install sysdeps to /opt/local
 # convenient to re-distribute the whole system
 alias emergelocal='emerge -G --root=/opt/local'
@@ -62,6 +60,9 @@ else
 	echo 'CHOST="i686-pc-linux-gnu"' | sudo tee -a /etc/make.conf
 	# force writing of accepted keywords
 	echo 'CONFIG_PROTECT="-*"' | sudo tee -a /etc/make.conf
+	# download binary packages instead of compiling from source by default
+	# and unmask packages automatically
+	echo 'EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --getbinpkgonly --autounmask-write"' | sudo tee -a /etc/make.conf
 	sudo mkdir -p /usr/portage/profiles
 	sudo ln -s /usr/portage/profiles /etc/make.profile
 	sudo mkdir -p /etc/env.d/gcc
