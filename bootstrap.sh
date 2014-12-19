@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ "`lsb_release -i`" != "Distributor ID:	OpenNao" ]
+if [ "`lsb_release -si`" != "OpenNao" ]
 then
 	echo "This script must be run on Nao or an OpenNao VM"
 	exit 1
