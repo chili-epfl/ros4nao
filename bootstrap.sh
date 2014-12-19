@@ -118,9 +118,15 @@ sudo tar -xf bootstrap.tar.gz -C /
 rm bootstrap.tar.gz
 sudo robotpkg_add $ROBOTPKG_OPENNAO_BIN_MIRROR/All/pkgin-0.6.4r1.tgz
 
-# Per default, the robotpkgin repository will be http://robotpkg.openrobots.org/packages/bsd/$osname-$osrelease-$arch/All
-# Fall back to $ROBOTPKG_OPENNAO_BIN_MIRROR in case the repository does not exist (yet)
-echo $ROBOTPKG_OPENNAO_BIN_MIRROR | sudo tee -a /opt/openrobots/etc/robotpkgin/repositories.conf
+# Check if the default robotpkin repository exists
+osname=`lsb_release -si`
+osrelease=`lsb_release -sr`
+arch=`uname -m`
+wget --spider -q "http://robotpkg.openrobots.org/packages/bsd/$osname-$osrelease-$arch/All/pkg_summary.gz"
+if [ $? != 0 ]; then
+    # Default repository not found, replace by $ROBOTPKG_OPENNAO_BIN_MIRROR
+    echo "${ROBOTPKG_OPENNAO_BIN_MIRROR}/All" | sudo tee /opt/openrobots/etc/robotpkgin/repositories.conf >/dev/null
+fi
 
 sudo robotpkgin update
 
