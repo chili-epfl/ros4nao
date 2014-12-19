@@ -1,14 +1,30 @@
 #!/bin/sh
 
-OPENNAO_PORTAGE_BIN_MIRROR=http://chili-research.epfl.ch/OpenNao/1.14
-OPENNAO_SYSTEM_PACKAGES=opennao-1.14.5-pkg_db.tar.gz
-ROBOTPKG_OPENNAO_BIN_MIRROR=http://robotpkg.openrobots.org/packages/bsd/OpenNao-1.14.5.1-i386
-
 if [ "`lsb_release -i`" != "Distributor ID:	OpenNao" ]
 then
 	echo "This script must be run on Nao or an OpenNao VM"
 	exit 1
 fi
+
+OPENNAO_VERSION=`lsb_release -r | cut -f2`
+
+# TODO: Set the correct mirror URIs once the script has been ported and tested to the new OpenNao versions
+case "$OPENNAO_VERSION" in
+1.*)
+	OPENNAO_PORTAGE_BIN_MIRROR=http://chili-research.epfl.ch/OpenNao/1.14
+	OPENNAO_SYSTEM_PACKAGES=opennao-1.14.5-pkg_db.tar.gz
+	ROBOTPKG_OPENNAO_BIN_MIRROR=http://robotpkg.openrobots.org/packages/bsd/OpenNao-1.14.5.1-i386
+	;;
+2.*)
+	OPENNAO_PORTAGE_BIN_MIRROR=http://chili-research.epfl.ch/OpenNao/2.1.0.19
+	OPENNAO_SYSTEM_PACKAGES=opennao-pkg_db.tar.gz
+	ROBOTPKG_OPENNAO_BIN_MIRROR=http://robotpkg.openrobots.org/packages/bsd/OpenNao-2.1.0.19-i386
+	;;
+*)
+	echo "This script has not been adapted to OpenNao version $OPENNAO_VERSION." >&2
+	echo "Please adapt the ..._MIRROR variables manually." >&2
+	;;
+esac
 
 if [ -z "$OPENROBOTS" ]
 then
