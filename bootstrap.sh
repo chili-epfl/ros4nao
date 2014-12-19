@@ -44,9 +44,10 @@ export MANPATH=$MANPATH:$OPENROBOTS/man
 # convenient to re-distribute the whole system
 alias emergelocal='emerge -G --root=/opt/local'
 
-# make sure PATH and aliases are preserved 
+# make sure aliases are preserved 
 # through sudo (cf http://serverfault.com/a/178956)
-alias sudo='sudo env PATH=$PATH '
+# note the trailing space
+alias sudo='sudo '
 EOF
 
 else
@@ -54,6 +55,15 @@ else
 fi
 
 source ~/.bash_profile
+
+# Add openrobots binary path to sudo PATH variable
+SUDOPATH="`sudo printenv PATH`:$OPENROBOTS/sbin:$OPENROBOTS/bin"
+sudo flock /etc/sudoers.tmp -c bash <<EOF
+echo -e "Defaults\tsecure_path=\"$SUDOPATH\"" > /etc/sudoers.tmp
+cat /etc/sudoers >> /etc/sudoers.tmp
+visudo -q -c -f /etc/sudoers.tmp && cat /etc/sudoers.tmp > /etc/sudoers
+rm /etc/sudoers.tmp
+EOF
 
 # On Nao, the SD card is mounted on /var/persistent
 # install our stuff there.
