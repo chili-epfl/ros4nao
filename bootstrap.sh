@@ -67,7 +67,7 @@ EOF
 
 # On Nao, the SD card is mounted on /var/persistent
 # install our stuff there.
-if [ -d /var/persistent ]
+if [ ! -e /opt -a -d /var/persistent ]
 then
 	echo "Creating a symlink from SD card to /opt..."
 	sudo mkdir -p /var/persistent/opt
