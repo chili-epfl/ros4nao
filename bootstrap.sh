@@ -57,13 +57,16 @@ fi
 source ~/.bash_profile
 
 # Add openrobots binary path to sudo PATH variable
-SUDOPATH="`sudo printenv PATH`:$OPENROBOTS/sbin:$OPENROBOTS/bin"
+SUDOPATH="`sudo printenv PATH`"
+echo $SUDOPATH | grep "/opt/openrobots" >/dev/null 2>/dev/null
+if [ $? != 0 ]; then
 sudo flock /etc/sudoers.tmp -c bash <<EOF
-echo -e "Defaults\tsecure_path=\"$SUDOPATH\"" > /etc/sudoers.tmp
+echo -e "Defaults\tsecure_path=\"$SUDOPATH:$OPENROBOTS/sbin:$OPENROBOTS/bin\"" > /etc/sudoers.tmp
 cat /etc/sudoers >> /etc/sudoers.tmp
 visudo -q -c -f /etc/sudoers.tmp && cat /etc/sudoers.tmp > /etc/sudoers
 rm /etc/sudoers.tmp
 EOF
+fi
 
 # On Nao, the SD card is mounted on /var/persistent
 # install our stuff there.
