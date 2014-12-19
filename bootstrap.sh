@@ -1,3 +1,5 @@
+#!/bin/sh
+
 OPENNAO_PORTAGE_BIN_MIRROR=http://chili-research.epfl.ch/OpenNao/1.14
 OPENNAO_SYSTEM_PACKAGES=opennao-1.14.5-pkg_db.tar.gz
 ROBOTPKG_OPENNAO_BIN_MIRROR=http://robotpkg.openrobots.org/packages/bsd/OpenNao-1.14.5.1-i386
