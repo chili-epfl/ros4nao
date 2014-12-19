@@ -82,7 +82,7 @@ else
 	echo "'emerge' not available. Installing 'emerge'..."
 
 	wget -q $OPENNAO_PORTAGE_BIN_MIRROR/packages/sys-apps/portage-2.1.10.41-r178.tbz2
-	sudo tar -xjf /home/nao/portage-2.1.10.41-r178.tbz2 -C /
+	sudo tar -xjf portage-2.1.10.41-r178.tbz2 -C /
 
 	# fake a valid portage environment
 	echo 'CHOST="i686-pc-linux-gnu"' | sudo tee -a /etc/make.conf
