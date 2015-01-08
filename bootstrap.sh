@@ -1,12 +1,30 @@
-OPENNAO_PORTAGE_BIN_MIRROR=http://chili-research.epfl.ch/OpenNao/1.14
-OPENNAO_SYSTEM_PACKAGES=opennao-1.14.5-pkg_db.tar.gz
-ROBOTPKG_OPENNAO_BIN_MIRROR=http://robotpkg.openrobots.org/packages/bsd/OpenNao-1.14.5.1-i386
+#!/bin/sh
 
-if [ "`lsb_release -i`" != "Distributor ID:	OpenNao" ]
+if [ "`lsb_release -si`" != "OpenNao" ]
 then
 	echo "This script must be run on Nao or an OpenNao VM"
 	exit 1
 fi
+
+OPENNAO_VERSION=`lsb_release -r | cut -f2`
+
+# TODO: Set the correct mirror URIs once the script has been ported and tested to the new OpenNao versions
+case "$OPENNAO_VERSION" in
+1.*)
+	OPENNAO_PORTAGE_BIN_MIRROR=http://chili-research.epfl.ch/OpenNao/1.14
+	OPENNAO_SYSTEM_PACKAGES=opennao-1.14.5-pkg_db.tar.gz
+	ROBOTPKG_OPENNAO_BIN_MIRROR=http://robotpkg.openrobots.org/packages/bsd/OpenNao-1.14.5.1-i386
+	;;
+2.*)
+	OPENNAO_PORTAGE_BIN_MIRROR=http://chili-research.epfl.ch/OpenNao/2.1.0.19
+	OPENNAO_SYSTEM_PACKAGES=opennao-pkg_db.tar.gz
+	ROBOTPKG_OPENNAO_BIN_MIRROR=http://robotpkg.openrobots.org/packages/bsd/OpenNao-2.1.0.19-i386
+	;;
+*)
+	echo "This script has not been adapted to OpenNao version $OPENNAO_VERSION." >&2
+	echo "Please adapt the ..._MIRROR variables manually." >&2
+	;;
+esac
 
 if [ -z "$OPENROBOTS" ]
 then
@@ -26,9 +44,10 @@ export MANPATH=$MANPATH:$OPENROBOTS/man
 # convenient to re-distribute the whole system
 alias emergelocal='emerge -G --root=/opt/local'
 
-# make sure PATH and aliases are preserved 
+# make sure aliases are preserved 
 # through sudo (cf http://serverfault.com/a/178956)
-alias sudo='sudo env PATH=$PATH '
+# note the trailing space
+alias sudo='sudo '
 EOF
 
 else
@@ -37,9 +56,21 @@ fi
 
 source ~/.bash_profile
 
+# Add openrobots binary path to sudo PATH variable
+SUDOPATH="`sudo printenv PATH`"
+echo $SUDOPATH | grep "/opt/openrobots" >/dev/null 2>/dev/null
+if [ $? != 0 ]; then
+sudo flock /etc/sudoers.tmp -c bash <<EOF
+echo -e "Defaults\tsecure_path=\"$SUDOPATH:$OPENROBOTS/sbin:$OPENROBOTS/bin\"" > /etc/sudoers.tmp
+cat /etc/sudoers >> /etc/sudoers.tmp
+visudo -q -c -f /etc/sudoers.tmp && cat /etc/sudoers.tmp > /etc/sudoers
+rm /etc/sudoers.tmp
+EOF
+fi
+
 # On Nao, the SD card is mounted on /var/persistent
 # install our stuff there.
-if [ -d /var/persistent ]
+if [ ! -e /opt -a -d /var/persistent ]
 then
 	echo "Creating a symlink from SD card to /opt..."
 	sudo mkdir -p /var/persistent/opt
@@ -53,8 +84,9 @@ then
 else
 	echo "'emerge' not available. Installing 'emerge'..."
 
-	wget -q $OPENNAO_PORTAGE_BIN_MIRROR/packages/sys-apps/portage-2.1.10.41-r178.tbz2
-	sudo tar -xjf /home/nao/portage-2.1.10.41-r178.tbz2 -C /
+	wget -O portage-2.1.10.41-r178.tbz2 -q $OPENNAO_PORTAGE_BIN_MIRROR/packages/sys-apps/portage-2.1.10.41-r178.tbz2
+	sudo tar -xjf portage-2.1.10.41-r178.tbz2 -C /
+	rm portage-2.1.10.41-r178.tbz2
 
 	# fake a valid portage environment
 	echo 'CHOST="i686-pc-linux-gnu"' | sudo tee -a /etc/make.conf
@@ -86,6 +118,17 @@ wget -q $ROBOTPKG_OPENNAO_BIN_MIRROR/bootstrap.tar.gz
 sudo tar -xf bootstrap.tar.gz -C /
 rm bootstrap.tar.gz
 sudo robotpkg_add $ROBOTPKG_OPENNAO_BIN_MIRROR/All/pkgin-0.6.4r1.tgz
+
+# Check if the default robotpkin repository exists
+osname=`lsb_release -si`
+osrelease=`lsb_release -sr`
+arch=`uname -m`
+wget --spider -q "http://robotpkg.openrobots.org/packages/bsd/$osname-$osrelease-$arch/All/pkg_summary.gz"
+if [ $? != 0 ]; then
+    # Default repository not found, replace by $ROBOTPKG_OPENNAO_BIN_MIRROR
+    echo "${ROBOTPKG_OPENNAO_BIN_MIRROR}/All" | sudo tee /opt/openrobots/etc/robotpkgin/repositories.conf >/dev/null
+fi
+
 sudo robotpkgin update
 
 echo "Your system is now configured to use binary packages for both "
